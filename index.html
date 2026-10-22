@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FinSim — Finans Simülasyonu</title>
+<style>
+:root {
+  --site-primary: #163d35;
+  --site-on-primary: #ffffff;
+  --site-secondary: #e3eee8;
+  --site-on-secondary: #173d35;
+  --site-background: #f4f7f5;
+  --site-on-background: #172a25;
+  --site-font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-font-heading: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-heading-scale: 1;
+  --site-spacing-scale: 1;
+  --site-radius-scale: 1;
+  --site-decoration-opacity: 1;
+  --surface: light-dark(#ffffff, #1c2925);
+  --surface-soft: light-dark(#edf3ef, #25342f);
+  --text: light-dark(#172a25, #e8f0eb);
+  --muted: light-dark(#6b7e75, #a5b8ae);
+  --border: light-dark(#dce6df, #34473f);
+  --green: #168363;
+  --red: #c35a50;
+  color-scheme: light dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: var(--site-font-body); background: var(--site-background); color: var(--text); }
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+#app { min-height: 100vh; width: 100%; background-color: var(--site-background); color: var(--site-on-background); border-radius: 0; }
+.topbar { background: var(--site-primary); color: var(--site-on-primary); padding: 18px clamp(18px, 4vw, 54px); display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.brand { display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:-.04em; font-size:22px; }
+.logo { width:40px; height:40px; border-radius:13px; display:grid; place-items:center; background:#d8efe3; color:#163d35; font-size:22px; font-weight:900; }
+.brand small { display:block; font-size:11px; letter-spacing:.08em; font-weight:600; opacity:.72; margin-top:2px; }
+.top-right { display:flex; align-items:center; gap:12px; font-size:13px; }
+.pill { border:1px solid #ffffff35; border-radius:999px; padding:7px 11px; white-space:nowrap; }
+.demo-tag { background:#e1f4e8; color:#18533d; font-weight:700; border:0; }
+.shell { max-width:1280px; margin:0 auto; padding:28px clamp(16px, 3vw, 36px) 50px; }
+.welcome { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:22px; }
+.eyebrow { text-transform:uppercase; letter-spacing:.13em; color:var(--green); font-size:11px; font-weight:800; }
+h1,h2,h3,p { margin-top:0; }
+h1 { font-size:calc(32px * var(--site-heading-scale)); letter-spacing:-.045em; line-height:1.1; margin:7px 0 8px; }
+.subtitle { color:var(--muted); margin:0; font-size:14px; line-height:1.6; }
+.day-control { display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--border); padding:9px 12px; border-radius:12px; font-size:13px; white-space:nowrap; }
+.day-control button { border:0; background:var(--surface-soft); color:var(--text); border-radius:8px; width:28px; height:28px; font-weight:800; }
+.metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-bottom:20px; }
+.metric { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:18px; min-width:0; }
+.metric-top { display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:12px; gap:8px; }
+.metric-icon { display:grid; place-items:center; width:31px; height:31px; border-radius:10px; background:var(--surface-soft); color:var(--site-primary); font-size:16px; }
+.metric-value { font-size:clamp(20px,2.3vw,29px); font-weight:800; letter-spacing:-.04em; margin:13px 0 6px; overflow-wrap:anywhere; }
+.metric-foot { color:var(--muted); font-size:11px; }
+.positive { color:var(--green) !important; }
+.negative { color:var(--red) !important; }
+.layout { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(300px,.95fr); gap:18px; align-items:start; }
+.panel { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:20px; min-width:0; }
+.panel + .panel { margin-top:18px; }
+.panel-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:18px; }
+.panel h2 { font-size:17px; letter-spacing:-.025em; margin:0 0 5px; }
+.panel-note { color:var(--muted); font-size:12px; margin:0; line-height:1.5; }
+.tabs { display:flex; gap:5px; background:var(--surface-soft); border-radius:10px; padding:4px; margin-bottom:16px; overflow:auto; }
+.tab { border:0; background:transparent; color:var(--muted); padding:8px 12px; border-radius:7px; font-size:12px; font-weight:700; white-space:nowrap; }
+.tab.active { background:var(--surface); color:var(--text); box-shadow:0 1px 3px #00000012; }
+.asset-list { display:flex; flex-direction:column; }
+.asset { display:grid; grid-template-columns:minmax(0,1.3fr) minmax(82px,.8fr) minmax(76px,.65fr) auto; align-items:center; gap:10px; padding:13px 0; border-bottom:1px solid var(--border); }
+.asset:last-child { border-bottom:0; }
+.asset-name { display:flex; align-items:center; gap:10px; min-width:0; }
+.asset-icon { width:38px; height:38px; flex:0 0 38px; border-radius:12px; display:grid; place-items:center; background:var(--surface-soft); font-weight:800; color:var(--site-primary); }
+.asset-title { font-size:13px; font-weight:750; }
+.asset-sub { color:var(--muted); font-size:11px; margin-top:3px; }
+.asset-price { font-size:13px; font-weight:750; }
+.asset-change { font-size:11px; margin-top:4px; }
+.small-btn { border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:9px; padding:8px 11px; font-size:12px; font-weight:750; }
+.small-btn.primary { background:var(--site-primary); color:var(--site-on-primary); border-color:var(--site-primary); }
+.small-btn:hover, .primary-btn:hover { filter:brightness(1.07); }
+.portfolio-row { display:grid; grid-template-columns:1fr auto; gap:10px; padding:13px 0; border-bottom:1px solid var(--border); align-items:center; }
+.portfolio-row:last-child { border-bottom:0; }
+.holding-name { font-weight:700; font-size:13px; }
+.holding-sub { font-size:11px; color:var(--muted); margin-top:4px; }
+.holding-value { font-weight:750; font-size:13px; text-align:right; }
+.holding-sub.right { text-align:right; }
+.empty { padding:22px 0; text-align:center; color:var(--muted); font-size:13px; }
+.bar-wrap { height:8px; background:var(--surface-soft); border-radius:99px; overflow:hidden; margin:12px 0 16px; }
+.bar { height:100%; background:var(--green); border-radius:99px; transition:width .2s; }
+.budget-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.budget-item { background:var(--surface-soft); padding:12px; border-radius:12px; }
+.budget-item label { display:block; color:var(--muted); font-size:11px; margin-bottom:6px; }
+.budget-item strong { font-size:15px; }
+.budget-item input { width:100%; margin-top:8px; border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:8px; padding:7px; font-size:12px; }
+.budget-actions { display:flex; gap:8px; margin-top:12px; }
+.budget-actions input { flex:1; min-width:0; border:1px solid var(--border); border-radius:9px; padding:10px; background:var(--surface); color:var(--text); }
+.primary-btn { border:0; background:var(--site-primary); color:var(--site-on-primary); padding:11px 14px; border-radius:10px; font-size:12px; font-weight:800; }
+.leader-row { display:grid; grid-template-columns:28px 1fr auto; gap:10px; align-items:center; padding:12px 0; border-bottom:1px solid var(--border); }
+.leader-row:last-child { border-bottom:0; }
+.rank { width:27px; height:27px; display:grid; place-items:center; border-radius:9px; background:var(--surface-soft); font-size:11px; font-weight:800; }
+.avatar { width:34px; height:34px; border-radius:50%; display:grid; place-items:center; background:#dcece3; color:#174d3a; font-size:11px; font-weight:800; }
+.leader-person { display:flex; align-items:center; gap:9px; min-width:0; }
+.leader-name { font-size:12px; font-weight:750; }
+.leader-school { color:var(--muted); font-size:10px; margin-top:3px; }
+.leader-score { font-size:12px; font-weight:800; text-align:right; }
+.coach { background:linear-gradient(135deg, var(--site-primary), #286b55); color:#fff; border:0; }
+.coach .panel-note { color:#d4e7dc; }
+.coach h2 { display:flex; align-items:center; gap:8px; }
+.coach-icon { width:32px; height:32px; border-radius:10px; background:#ffffff20; display:grid; place-items:center; }
+.coach-response { background:#ffffff12; border:1px solid #ffffff20; border-radius:12px; padding:12px; font-size:12px; line-height:1.6; margin:14px 0; min-height:66px; color:#f3faf6; }
+.coach-form { display:flex; gap:7px; }
+.coach-form input { flex:1; min-width:0; border:1px solid #ffffff40; background:#ffffff12; color:#fff; border-radius:10px; padding:10px; font-size:12px; }
+.coach-form input::placeholder { color:#d4e7dc; }
+.coach-form button { border:0; background:#e0f3e8; color:#174c3a; border-radius:10px; padding:0 13px; font-weight:800; }
+.disclaimer { font-size:10px; color:#d4e7dc; margin:10px 0 0; line-height:1.5; }
+.transactions { display:flex; flex-direction:column; gap:0; }
+.tx { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
+.tx:last-child { border-bottom:0; }
+.tx-title { font-size:12px; font-weight:750; }
+.tx-meta { font-size:10px; color:var(--muted); margin-top:4px; }
+.tx-amount { font-size:12px; font-weight:800; text-align:right; white-space:nowrap; }
+.footer { margin-top:24px; padding:14px 2px; color:var(--muted); font-size:11px; display:flex; justify-content:space-between; gap:14px; border-top:1px solid var(--border); }
+.modal-backdrop { position:fixed; inset:0; background:#0d211bb0; display:none; align-items:center; justify-content:center; padding:18px; z-index:10; }
+.modal-backdrop.open { display:flex; }
+.modal { width:min(430px,100%); background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:20px; padding:23px; box-shadow:0 20px 80px #0003; }
+.modal-head { display:flex; justify-content:space-between; align-items:start; gap:12px; margin-bottom:20px; }
+.modal-head h2 { margin:0 0 4px; font-size:20px; }
+.close { border:0; background:var(--surface-soft); color:var(--text); width:32px; height:32px; border-radius:9px; font-size:19px; }
+.field { margin-bottom:15px; }
+.field label { display:block; font-size:12px; font-weight:700; margin-bottom:7px; }
+.field input, .field select { width:100%; border:1px solid var(--border); background:var(--surface); color:var(--text); padding:12px; border-radius:10px; }
+.trade-summary { background:var(--surface-soft); padding:12px; border-radius:11px; display:flex; justify-content:space-between; font-size:12px; margin-bottom:16px; }
+.trade-switch { display:flex; gap:8px; margin-bottom:18px; }
+.trade-switch button { flex:1; border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:10px; padding:10px; font-weight:800; }
+.trade-switch button.selected { background:var(--site-primary); color:var(--site-on-primary); border-color:var(--site-primary); }
+.toast { position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(120px); opacity:0; transition:.25s; background:#153d32; color:#fff; padding:12px 17px; border-radius:12px; z-index:20; font-size:13px; box-shadow:0 8px 30px #0002; max-width:calc(100vw - 28px); }
+.toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+@media (max-width:900px) { .metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } .layout { grid-template-columns:1fr; } }
+@media (max-width:600px) { .topbar { padding:14px 16px; } .brand { font-size:19px; } .top-right .pill:not(.demo-tag) { display:none; } .shell { padding:22px 13px 35px; } .welcome { align-items:flex-start; flex-direction:column; } .day-control { align-self:flex-start; } .metrics { gap:9px; } .metric { padding:13px; border-radius:14px; } .metric-value { font-size:22px; } .panel { padding:15px; border-radius:15px; } .asset { grid-template-columns:minmax(0,1fr) auto auto; gap:7px; } .asset-price { display:none; } .asset-icon { width:32px; height:32px; flex-basis:32px; } .small-btn { padding:7px 9px; } .footer { flex-direction:column; } }
+@media (prefers-color-scheme:dark) { .metric-icon, .asset-icon { color:#d9eee3; } .avatar { background:#284e40; color:#d9eee3; } }
+</style>
+</head>
+<body>
+<div id="app" data-sites-preview-theme="custom">
+  <header class="topbar">
+    <div class="brand"><div class="logo">F</div><div>FinSim<small>STUDENT FINANCE LAB</small></div></div>
+    <div class="top-right"><span class="pill">🌐 Üniversiteler arası lig</span><span class="pill demo-tag">DEMO MODU</span></div>
+  </header>
+  <main class="shell">
+    <section class="welcome">
+      <div><div class="eyebrow">Simülasyon paneli / Sezon 01</div><h1>Finansını yönet. <span style="color:var(--green)">Geleceğini keşfet.</span></h1><p class="subtitle">Sanal paranı yönet, farklı varlıkları keşfet ve diğer öğrencilerle yarış.<br>Buradaki tüm işlemler eğitim amaçlı simülasyondur.</p></div>
+      <div class="day-control"><button id="prevDay" aria-label="Önceki simülasyon günü">−</button><span>Simülasyon Günü <strong id="dayLabel">01</strong></span><button id="nextDay" aria-label="Sonraki simülasyon günü">+</button></div>
+    </section>
+    <section class="metrics">
+      <div class="metric"><div class="metric-top"><span>Toplam portföy</span><span class="metric-icon">◈</span></div><div class="metric-value" id="totalValue">₺100.000</div><div class="metric-foot" id="totalFoot">Başlangıç bakiyesi</div></div>
+      <div class="metric"><div class="metric-top"><span>Kullanılabilir nakit</span><span class="metric-icon">▤</span></div><div class="metric-value" id="cashValue">₺100.000</div><div class="metric-foot">Yeni işlemler için hazır</div></div>
+      <div class="metric"><div class="metric-top"><span>Toplam kâr / zarar</span><span class="metric-icon">↗</span></div><div class="metric-value" id="pnlValue">₺0</div><div class="metric-foot" id="pnlFoot">%0,00 toplam getiri</div></div>
+      <div class="metric"><div class="metric-top"><span>Yatırım oranı</span><span class="metric-icon">◉</span></div><div class="metric-value" id="investedRatio">%0</div><div class="metric-foot">Portföyün yatırılmış kısmı</div></div>
+    </section>
+    <section class="layout">
+      <div>
+        <section class="panel">
+          <div class="panel-head"><div><h2>Piyasaları keşfet</h2><p class="panel-note">Örnek fiyatlar · Alım satım simülasyonu</p></div><span class="pill" style="color:var(--muted);border-color:var(--border);font-size:11px">4 varlık sınıfı</span></div>
+          <div class="tabs" id="marketTabs"><button class="tab active" data-filter="all">Tümü</button><button class="tab" data-filter="stock">Hisse</button><button class="tab" data-filter="fx">Döviz</button><button class="tab" data-filter="metal">Altın</button></div>
+          <div class="asset-list" id="assetList"></div>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><div><h2>Portföyüm</h2><p class="panel-note">Sanal varlıkların ve mevcut değerleri</p></div><button class="small-btn" id="resetButton">Sıfırla ↺</button></div>
+          <div id="portfolioList"></div>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><div><h2>Son işlemler</h2><p class="panel-note">Simülasyon hareketlerinin</p></div></div>
+          <div class="transactions" id="transactionList"></div>
+        </section>
+      </div>
+      <aside>
+        <section class="panel">
+          <div class="panel-head"><div><h2>Aylık bütçe planı</h2><p class="panel-note">Sanal yaşam bütçeni dengede tut</p></div></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span style="font-size:12px;color:var(--muted)">Aylık bütçe</span><strong id="budgetTotal">₺20.000</strong></div>
+          <div class="bar-wrap"><div class="bar" id="budgetBar" style="width:28%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:14px"><span id="budgetSpentLabel">Harcanan ₺5.600</span><span id="budgetRemainLabel">Kalan ₺14.400</span></div>
+          <div class="budget-grid">
+            <div class="budget-item"><label>🏠 İhtiyaçlar</label><strong id="needsValue">₺3.000</strong></div>
+            <div class="budget-item"><label>☕ İstekler</label><strong id="wantsValue">₺1.600</strong></div>
+            <div class="budget-item"><label>🎓 Eğitim</label><strong id="educationValue">₺1.000</strong></div>
+            <div class="budget-item"><label>💰 Tasarruf hedefi</label><strong id="savingsValue">₺5.000</strong></div>
+          </div>
+          <div class="budget-actions"><input id="expenseAmount" type="number" min="1" max="20000" placeholder="Harcama tutarı (₺)" aria-label="Harcama tutarı"><button class="primary-btn" id="addExpense">Harcama ekle</button></div>
+          <p class="panel-note" style="margin-top:10px">Bütçe simülasyonu yatırım bakiyesinden ayrıdır.</p>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><div><h2>🏆 Kampüsler arası lig</h2><p class="panel-note">Örnek sıralama · demo öğrenciler</p></div></div>
+          <div id="leaderboard"></div>
+        </section>
+        <section class="panel coach">
+          <div class="panel-head"><div><h2><span class="coach-icon">✦</span> AI Finans Koçu</h2><p class="panel-note">Simülasyonunu yorumla ve finans kavramlarını öğren.</p></div></div>
+          <div class="coach-response" id="coachResponse">Merhaba! Portföyün ve bütçen hakkında bir soru sor. Örneğin: “Yatırım oranım ne anlama geliyor?”</div>
+          <form class="coach-form" id="coachForm"><input id="coachInput" placeholder="Bir soru yaz..." autocomplete="off" aria-label="Finans koçuna soru"><button type="submit">Sor ↗</button></form>
+          <p class="disclaimer">Demo koç, örnek kurallarla yanıt verir; gerçek bir yapay zekâ servisine bağlı değildir. Bu uygulama yatırım tavsiyesi sunmaz.</p>
+        </section>
+      </aside>
+    </section>
+    <footer class="footer"><span>FinSim · Uluslararası Finans ve Bankacılık Kulübü</span><span>Örnek fiyatlar ve sanal para kullanılır · Gerçek piyasa verisi değildir</span></footer>
+  </main>
+</div>
+<div class="modal-backdrop" id="tradeModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <div class="modal-head"><div><div class="eyebrow">Sanal işlem</div><h2 id="modalTitle">Varlık al</h2><p class="panel-note" id="modalAssetName">Varlık</p></div><button class="close" id="closeModal" aria-label="Kapat">×</button></div>
+    <div class="trade-switch"><button id="buyTab" class="selected">Alım yap</button><button id="sellTab">Satış yap</button></div>
+    <div class="field"><label for="tradeQuantity">Miktar / adet</label><input id="tradeQuantity" type="number" min="0.01" step="0.01" value="1"></div>
+    <div class="trade-summary"><span>Simülasyon fiyatı</span><strong id="tradePrice">₺0</strong></div>
+    <div class="trade-summary"><span>İşlem toplamı</span><strong id="tradeTotal">₺0</strong></div>
+    <button class="primary-btn" style="width:100%;padding:13px" id="confirmTrade">İşlemi onayla</button>
+    <p class="panel-note" style="margin-top:12px">Bu işlem yalnızca simülasyon bakiyeni etkiler.</p>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+const initialAssets = [
+  {id:'THYAO', name:'Türk Hava Yolları', ticker:'THYAO · Hisse', type:'stock', icon:'✈', price:312.5, change:1.8},
+  {id:'ASELS', name:'Aselsan', ticker:'ASELS · Hisse', type:'stock', icon:'◈', price:74.2, change:-0.7},
+  {id:'USD', name:'Amerikan Doları', ticker:'USD/TRY · Döviz', type:'fx', icon:'$', price:34.25, change:0.35},
+  {id:'EUR', name:'Euro', ticker:'EUR/TRY · Döviz', type:'fx', icon:'€', price:37.1, change:0.22},
+  {id:'GOLD', name:'Gram Altın', ticker:'XAU/TRY · Altın', type:'metal', icon:'Au', price:3025, change:0.9}
+];
+const initialLeaders = [
+  {name:'Deniz Yılmaz', school:'Boğaziçi Üniversitesi', score:106850, initials:'DY'},
+  {name:'Ece Demir', school:'İTÜ', score:104120, initials:'ED'},
+  {name:'Mert Kaya', school:'ODTÜ', score:101760, initials:'MK'},
+  {name:'Selin Arslan', school:'Marmara Üniversitesi', score:99800, initials:'SA'}
+];
+let assets = initialAssets.map(a=>({...a}));
+let cash = 100000;
+let startingCapital = 100000;
+let holdings = {};
+let transactions = [];
+let day = 1;
+let activeFilter = 'all';
+let selectedAsset = null;
+let tradeMode = 'buy';
+let budget = {total:20000, needs:3000, wants:1600, education:1000, savings:5000, spent:5600};
+const fmt = n => new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',maximumFractionDigits:2}).format(n);
+const num = n => new Intl.NumberFormat('tr-TR',{maximumFractionDigits:2}).format(n);
+const totalValue = () => cash + Object.entries(holdings).reduce((sum,[id,qty])=>sum + qty * assets.find(a=>a.id===id).price,0);
+const investedValue = () => Object.entries(holdings).reduce((sum,[id,qty])=>sum + qty * assets.find(a=>a.id===id).price,0);
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('show'),2600)}
+function renderMetrics(){const total=totalValue(), invested=investedValue(), pnl=total-startingCapital;document.getElementById('totalValue').textContent=fmt(total);document.getElementById('cashValue').textContent=fmt(cash);document.getElementById('pnlValue').textContent=(pnl>0?'+':'')+fmt(pnl);document.getElementById('pnlValue').className='metric-value '+(pnl>0?'positive':pnl<0?'negative':'');document.getElementById('pnlFoot').textContent=(pnl>0?'+':'')+num(pnl/startingCapital*100)+'% toplam getiri';document.getElementById('totalFoot').textContent=pnl===0?'Başlangıç bakiyesi':(pnl>0?'Başlangıca göre artış':'Başlangıca göre düşüş');document.getElementById('investedRatio').textContent='%'+num(invested/(total||1)*100)}
+function renderAssets(){const list=document.getElementById('assetList');const shown=assets.filter(a=>activeFilter==='all'||a.type===activeFilter);list.innerHTML=shown.map(a=>`<div class="asset"><div class="asset-name"><div class="asset-icon">${a.icon}</div><div style="min-width:0"><div class="asset-title">${a.name}</div><div class="asset-sub">${a.ticker}</div></div></div><div class="asset-price">${fmt(a.price)}</div><div><div class="asset-title">${fmt(a.price)}</div><div class="asset-change ${a.change>=0?'positive':'negative'}">${a.change>=0?'+':''}${num(a.change)}%</div></div><button class="small-btn" data-trade="${a.id}">İşlem</button></div>`).join('');list.querySelectorAll('[data-trade]').forEach(b=>b.addEventListener('click',()=>openTrade(b.dataset.trade)))}
+function renderPortfolio(){const el=document.getElementById('portfolioList');const rows=Object.entries(holdings).filter(([id,q])=>q>0.00001);if(!rows.length){el.innerHTML='<div class="empty">Henüz sanal yatırımın yok.<br>Piyasalardan bir varlık seçerek başlayabilirsin.</div>';return}el.innerHTML=rows.map(([id,qty])=>{const a=assets.find(x=>x.id===id);return `<div class="portfolio-row"><div><div class="holding-name">${a.name}</div><div class="holding-sub">${num(qty)} adet · ${a.ticker}</div></div><div><div class="holding-value">${fmt(qty*a.price)}</div><div class="holding-sub right">Güncel simülasyon değeri</div></div></div>`}).join('')}
+function renderTransactions(){const el=document.getElementById('transactionList');if(!transactions.length){el.innerHTML='<div class="empty">Henüz işlem yapılmadı. İlk sanal işlemin burada görünecek.</div>';return}el.innerHTML=transactions.slice(0,6).map(t=>`<div class="tx"><div><div class="tx-title">${t.mode==='buy'?'Alım':'Satış'} · ${t.name}</div><div class="tx-meta">Gün ${String(t.day).padStart(2,'0')} · ${num(t.qty)} adet</div></div><div class="tx-amount ${t.mode==='buy'?'':'positive'}">${t.mode==='buy'?'−':'+'}${fmt(t.total)}</div></div>`).join('')}
+function renderBudget(){document.getElementById('budgetTotal').textContent=fmt(budget.total);document.getElementById('budgetSpentLabel').textContent='Harcanan '+fmt(budget.spent);document.getElementById('budgetRemainLabel').textContent='Kalan '+fmt(Math.max(0,budget.total-budget.spent));document.getElementById('budgetBar').style.width=Math.min(100,budget.spent/budget.total*100)+'%';document.getElementById('budgetBar').style.background=budget.spent>budget.total?'var(--red)':'var(--green)';document.getElementById('needsValue').textContent=fmt(budget.needs);document.getElementById('wantsValue').textContent=fmt(budget.wants);document.getElementById('educationValue').textContent=fmt(budget.education);document.getElementById('savingsValue').textContent=fmt(budget.savings)}
+function renderLeaderboard(){const leaders=[{name:'Sen (Demo hesabı)',school:'Senin portföyün',score:totalValue(),initials:'S',self:true},...initialLeaders].sort((a,b)=>b.score-a.score);document.getElementById('leaderboard').innerHTML=leaders.map((p,i)=>`<div class="leader-row"><div class="rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div><div class="leader-person"><div class="avatar">${p.initials}</div><div style="min-width:0"><div class="leader-name">${p.name}</div><div class="leader-school">${p.school}</div></div></div><div class="leader-score ${p.self?'positive':''}">${fmt(p.score)}</div></div>`).join('')}
+function renderAll(){renderMetrics();renderAssets();renderPortfolio();renderTransactions();renderBudget();renderLeaderboard();document.getElementById('dayLabel').textContent=String(day).padStart(2,'0')}
+function openTrade(id){selectedAsset=assets.find(a=>a.id===id);tradeMode='buy';document.getElementById('modalAssetName').textContent=selectedAsset.name+' · '+selectedAsset.ticker;document.getElementById('tradePrice').textContent=fmt(selectedAsset.price);document.getElementById('tradeQuantity').value='1';document.getElementById('buyTab').classList.add('selected');document.getElementById('sellTab').classList.remove('selected');document.getElementById('modalTitle').textContent='Varlık al';document.getElementById('tradeModal').classList.add('open');updateTradeTotal()}
+function updateTradeTotal(){if(!selectedAsset)return;const q=Math.max(0,Number(document.getElementById('tradeQuantity').value)||0);document.getElementById('tradeTotal').textContent=fmt(q*selectedAsset.price)}
+function setTradeMode(mode){tradeMode=mode;document.getElementById('buyTab').classList.toggle('selected',mode==='buy');document.getElementById('sellTab').classList.toggle('selected',mode==='sell');document.getElementById('modalTitle').textContent=mode==='buy'?'Varlık al':'Varlık sat';updateTradeTotal()}
+function confirmTrade(){if(!selectedAsset)return;const qty=Number(document.getElementById('tradeQuantity').value);if(!Number.isFinite(qty)||qty<=0){toast('Lütfen geçerli bir miktar gir.');return}const total=qty*selectedAsset.price;const owned=holdings[selectedAsset.id]||0;if(tradeMode==='buy'){if(total>cash+0.0001){toast('Bu işlem için yeterli sanal nakdin yok.');return}cash-=total;holdings[selectedAsset.id]=owned+qty}else{if(qty>owned+0.000001){toast('Satmak için yeterli miktarda varlığın yok.');return}cash+=total;holdings[selectedAsset.id]=Math.max(0,owned-qty)}transactions.unshift({mode:tradeMode,id:selectedAsset.id,name:selectedAsset.name,qty,total,day,price:selectedAsset.price});document.getElementById('tradeModal').classList.remove('open');renderAll();toast(tradeMode==='buy'?'Sanal alım işlemi tamamlandı.':'Sanal satış işlemi tamamlandı.')}
+function addExpense(){const amount=Number(document.getElementById('expenseAmount').value);if(!Number.isFinite(amount)||amount<=0){toast('Lütfen geçerli bir harcama tutarı gir.');return}if(budget.spent+amount>budget.total){toast('Bu harcama aylık bütçeni aşıyor.');return}budget.spent+=amount;budget.wants+=amount;document.getElementById('expenseAmount').value='';renderBudget();toast('Harcama bütçene eklendi.')}
+function moveDay(direction){if(direction>0){day++;assets.forEach(a=>{const drift=(Math.sin(day*1.31+a.price/71)*0.65)+(a.change*0.22);a.price=Math.max(a.price*(a.type==='fx'?0.8:0.65),a.price*(1+drift/100));a.change=drift});renderAll();toast('Simülasyon bir gün ilerledi. Örnek fiyatlar güncellendi.')}else if(day>1){day--;toast('Gün göstergesi geri alındı. Fiyat geçmişi bu demoda geri sarılmaz.');document.getElementById('dayLabel').textContent=String(day).padStart(2,'0')}}
+function coachAnswer(q){const s=q.toLocaleLowerCase('tr-TR');const total=totalValue(), invested=investedValue(), pnl=total-startingCapital, ratio=invested/(total||1)*100, remaining=budget.total-budget.spent;let answer='Bu demo koç, finans kavramlarını açıklamak için basit kurallarla çalışır. Daha net bir soru deneyebilirsin: risk, çeşitlendirme, bütçe, getiri veya nakit.';if(s.includes('portföy')||s.includes('portfoy'))answer=`Şu anki toplam portföyün ${fmt(total)}. Bunun ${fmt(invested)} kadarı yatırımlarda, ${fmt(cash)} kadarı nakitte. Yatırım oranı yaklaşık %${num(ratio)}. Portföy dağılımı, tek bir varlığa aşırı bağımlı olup olmadığını anlamana yardımcı olur.`;else if(s.includes('risk')||s.includes('çeşit')||s.includes('dagit')||s.includes('dağıt'))answer='Çeşitlendirme, bütün paranı tek bir varlıkta tutmak yerine farklı varlık sınıflarına dağıtmaktır. Bu, tek bir varlığın olumsuz hareketinin portföyüne etkisini azaltabilir; ancak kayıp riskini tamamen ortadan kaldırmaz.';else if(s.includes('getiri')||s.includes('kâr')||s.includes('kar')||s.includes('zarar'))answer=`Başlangıç sermayene göre simüle edilmiş kâr/zararın ${pnl>=0?'+':''}${fmt(pnl)} (${pnl>=0?'+':''}%${num(pnl/startingCapital*100)}). Bu hesap nakit ile varlıkların güncel örnek fiyatlarını toplar. Sonuçlar gerçek piyasa getirisi değildir.`;else if(s.includes('bütçe')||s.includes('butce')||s.includes('harcama')||s.includes('tasarruf'))answer=`Aylık bütçende ${fmt(budget.total)} planlandı; ${fmt(budget.spent)} harcandı ve ${fmt(Math.max(0,remaining))} kaldı. Harcamaları ihtiyaç, istek ve eğitim gibi kategorilerde izlemek, tasarruf hedefini korumana yardımcı olabilir.`;else if(s.includes('dolar')||s.includes('döviz')||s.includes('kur'))answer='Döviz kuru, bir para biriminin başka bir para birimi cinsinden fiyatıdır. Kur değişimleri ithalat, ihracat, seyahat maliyetleri ve döviz cinsi borçları etkileyebilir. Bu demodaki kur değerleri örnektir.';else if(s.includes('altın'))answer='Altın, portföy simülasyonunda farklı bir varlık sınıfını temsil eder. Fiyatı ekonomik beklentiler, faizler, döviz kuru ve küresel belirsizliklerden etkilenebilir. Bu örnekteki fiyat gerçek piyasa fiyatı değildir.';else if(s.includes('faiz')||s.includes('enflasyon'))answer='Faiz, borçlanmanın maliyetini ve tasarruf getirisini etkiler. Faiz artışları kredi talebini ve ekonomik aktiviteyi yavaşlatabilir; ancak enflasyon üzerindeki etkiler zamana ve diğer ekonomik koşullara bağlıdır.';else if(s.includes('başla')||s.includes('nasıl'))answer='Başlamak için önce sanal bakiyeni ve aylık bütçeni incele. Piyasalar bölümünden bir varlık seçip “İşlem” düğmesine bas. Küçük miktarlarla farklı varlıkları deneyebilir, sonra portföy dağılımını ve riskini değerlendirebilirsin.';document.getElementById('coachResponse').textContent=answer}
+document.getElementById('marketTabs').addEventListener('click',e=>{const b=e.target.closest('[data-filter]');if(!b)return;activeFilter=b.dataset.filter;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t===b));renderAssets()});
+document.getElementById('closeModal').addEventListener('click',()=>document.getElementById('tradeModal').classList.remove('open'));
+document.getElementById('tradeModal').addEventListener('click',e=>{if(e.target.id==='tradeModal')e.currentTarget.classList.remove('open')});
+document.getElementById('buyTab').addEventListener('click',()=>setTradeMode('buy'));
+document.getElementById('sellTab').addEventListener('click',()=>setTradeMode('sell'));
+document.getElementById('tradeQuantity').addEventListener('input',updateTradeTotal);
+document.getElementById('confirmTrade').addEventListener('click',confirmTrade);
+document.getElementById('addExpense').addEventListener('click',addExpense);
+document.getElementById('expenseAmount').addEventListener('keydown',e=>{if(e.key==='Enter')addExpense()});
+document.getElementById('nextDay').addEventListener('click',()=>moveDay(1));
+document.getElementById('prevDay').addEventListener('click',()=>moveDay(-1));
+document.getElementById('coachForm').addEventListener('submit',e=>{e.preventDefault();const q=document.getElementById('coachInput').value.trim();if(!q)return;coachAnswer(q);document.getElementById('coachInput').value=''});
+document.getElementById('resetButton').addEventListener('click',()=>{if(!confirm('Simülasyonu başlangıç durumuna döndürmek istiyor musun? Tüm işlemler silinir.'))return;assets=initialAssets.map(a=>({...a}));cash=100000;startingCapital=100000;holdings={};transactions=[];day=1;budget={total:20000,needs:3000,wants:1600,education:1000,savings:5000,spent:5600};renderAll();toast('Simülasyon başlangıç durumuna döndürüldü.')});
+renderAll();
+</script>
+</body>
+</html>
